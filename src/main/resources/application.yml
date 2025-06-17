@@ -1,0 +1,9 @@
+app:
+  watch-path: ${APP_WATCH_PATH:./watch}
+  qr-code-output-path: ${APP_QRCODE_PATH:./qrcodes}
+  max-depth: 30
+  health-check-interval: 60000
+
+logging:
+  level:
+    org.zcl.filewatcher: INFO
