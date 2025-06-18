@@ -5,6 +5,7 @@ import cn.hutool.core.io.watch.SimpleWatcher;
 import cn.hutool.core.io.watch.WatchMonitor;
 import cn.hutool.core.io.watch.WatchUtil;
 import cn.hutool.core.io.watch.Watcher;
+import cn.hutool.core.io.watch.watchers.DelayWatcher;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +109,7 @@ public class FileWatchService {
 
             // 创建目录监听器
             WatchMonitor monitor = WatchUtil.create(dirPath);
-            monitor.setWatcher(new RecursiveDirWatcher(dirPath));
+            monitor.setWatcher(new DelayWatcher(new RecursiveDirWatcher(dirPath),3000));
 
             // 启动监听
             executor.submit(() -> {
@@ -170,9 +172,26 @@ public class FileWatchService {
         public RecursiveDirWatcher(String baseDir) {
             this.baseDir = baseDir;
             // 计算当前目录深度
-            this.currentDepth = baseDir.split(File.separator).length -
-                    appConfig.getWatchPath().split(File.separator).length;
+//            this.currentDepth = baseDir.split(File.separator).length -
+//                    appConfig.getWatchPath().split(File.separator).length;
+            // 计算深度差
+            this.currentDepth = getPathDepth(baseDir) - getPathDepth(appConfig.getWatchPath());
         }
+
+        // 使用Path API计算路径深度
+        private int getPathDepth(String path) {
+            if (path == null || path.isEmpty()) return 0;
+
+            // 将路径转换为Path对象
+            java.nio.file.Path pathObj = Paths.get(path);
+
+            // 规范化路径（处理.、..和多余分隔符）
+            pathObj = pathObj.normalize();
+
+            // 返回路径元素数量
+            return pathObj.getNameCount();
+        }
+
 
         @Override
         public void onCreate(WatchEvent<?> event, Path currentPath) {

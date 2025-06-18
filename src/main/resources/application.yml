@@ -7,3 +7,11 @@ app:
 logging:
   level:
     org.zcl.filewatcher: INFO
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
+      force-request: true
+      force-response: true
